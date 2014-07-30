@@ -1,0 +1,4 @@
+ProjetoOmega
+============
+
+Dissertação de Mestrado. Cooperação entre um Pionner P3AT e um Quadrotor, equipado com um ardupilot.
