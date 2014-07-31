@@ -54,7 +54,7 @@ signals:
     void MoverRobo();
     void PioneerCameraOFF();
     void ObjetivoAlcancado();
-    
+
 public slots:
 
 
@@ -99,23 +99,6 @@ private:
     theta,
     alpha;
 
-    //correção de encoder
-    double
-    erro_angular,       // Erro angular entre o calculado pelo laser e robô
-    erro_modulo,
-    x_land_calculado,   // Coordenada x da landmark, calculada
-    y_land_calculado,   // Coordenada y da landmark, calculada
-    erro_x,
-    erro_y,
-    x_robo_inicial,
-    y_robo_inicial,
-    x_robo_real,
-    y_robo_real;
-    int
-    inicio,fim,         // Posições do vetor de medidas onde foi identificada a lankmark
-    posicao;            // Posição da landmark medida pelo laser
-
-
     Mode
     myMode;             // Modo da máquina de estados para detecção da landmark
 
@@ -125,3 +108,4 @@ private:
 };
 
 #endif // PIONEERNAVIGATION_H
+

@@ -40,7 +40,6 @@ extern double           phi;                      // Orientação do robô
 extern ArRobot          robot;                    // Robo Aria
 extern int              x_landmark;               // Coordenada x da landmark
 extern int              y_landmark;               // Coordenada y da landmark
-extern bool             vai_fifi;
 
 class CameraPioneer : public QThread
 {
@@ -54,7 +53,7 @@ signals:
     void PrintImagePioneer();
     void PioneerCameraOFF();
     void PrintLandMarkPionnerAtual();
-    
+
 public slots:
 
     void setMode(Mode mode);            // Seta o modo de operação da máquina de estados para detecção da landmark
@@ -71,17 +70,17 @@ private:
 
     int
     contador,           // Contador para confirmar detecção das landmarks
-    i,j,                // Contadores para loops
+    k,l,                // Contadores para loops
     offset,             // Offset para gerar vetor de leitura do laser
     width,height,       // Dados da imagem
     inicio,fim,         // Posições do vetor de medidas onde foi identificada a lankmark
-    posicao;            // Posição da landmark medida pelo laser
+    indice_landmark;            // Posição da landmark medida pelo laser
 //    erro_x,             // Erro calculado na direção x
 //    erro_y;             // Erro calcualdo na direção y
 
     double
     angle,              // Posição da landmark reconehcida pela câmera
-    laser[71],          // Vetor com as medidas do laser
+    laser_image[71],          // Vetor com as medidas do laser
     dist_to_landmark,   // Distância do robô à landmark detectada
     ang_to_landmark,    // Ângulo entre a orientação do robô e a landmark
     PI = 3.14159265,    // Constante PI
@@ -108,3 +107,4 @@ private:
 };
 
 #endif // CAMERAPIONEER_H
+

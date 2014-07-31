@@ -265,11 +265,9 @@ void ProjetoOmega::RecalculandoRota()
 /******************************************************************************************************/
 void ProjetoOmega::MovimentandoRobo()
 {
-    semaforo_robo.lock();
     robo->setX((robot.getX())-offset_x);
     robo->setY((-robot.getY())-offset_y);
     trilha.push_back(ui->graphicsView->scene()->addEllipse((robot.getX())-offset_x+d/2,(-robot.getY())-offset_y+d/2,d/10,d/10,QPen (Qt::red),QBrush(Qt::red)));
-    semaforo_robo.unlock();
 }
 
 
