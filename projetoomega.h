@@ -1,7 +1,7 @@
 #ifndef PROJETOOMEGA_H
 #define PROJETOOMEGA_H
 
-// Bibliotecas do sistema
+//Qt
 #include <QMainWindow>
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>
@@ -11,30 +11,41 @@
 #include <QObject>
 #include <QTimer>
 
+//OpenCV
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 using namespace cv;
 
-// Bibliotecas criadas pelo Frodo
+//Frodo
 #include "myscene.h"
 #include "ui_projetoomega.h"
 #include "pioneernavigation.h"
-
+#include "PioneerView.h"
+#include "QuadrotorView.h"
+#include "CameraPioneer.h"
+#include "CameraQuadrotor.h"
+#include "QuadrotorNavigation.h"
 
 
 // Variáveis criadas em LoadMap.h
 
-extern cord     *coordenada;    //Coordenadas x y das landmarks
-extern int      **mapa;          //Mapa com os pesos e as conexões
-extern int      dim;             //Dimensão do mapa
-extern int      origem;          //Origem do Pionner
-extern int      alvo;            //Destino do Pionner
-extern ArRobot  robot;       //Robo Aria
-extern ArSick   laser;        //Laser
-extern int      *caminho;        //Vetor com o caminho de menor peso
-extern int      tamanho;         //Quantidade de nós entre origem e destino, inclusive
-extern bool     nav;
+extern cord                 *coordenada;            //Coordenadas x y das landmarks
+extern int                  **mapa;                 //Mapa com os pesos e as conexões
+extern int                  dim;                    //Dimensão do mapa
+extern int                  origem;                 //Origem do Pionner
+extern int                  alvo;                   //Destino do Pionner
+extern ArRobot              robot;                  //Robo Aria
+extern ArSick               laser;                  //Laser
+extern int                  *caminho;               //Vetor com o caminho de menor peso
+extern int                  tamanho;                //Quantidade de nós entre origem e destino, inclusive
+extern CameraPioneer        *PioneerCamera;         //Thread da câmera do pioneer
+extern CameraQuadrotor      *QuadrotorCamera;       //Thread da câmera do Quadrotor
+extern QuadrotorNavigation  *NavigationQuadrotor;   //Thread para Navegação do Quadrotor
+extern int                  pioneer_landmark;       //landmark procurada pelo pioneer
+extern QMutex               semaforo_robo;          // Semáforo para sincronizar a leitura e escrita no robo
+
+extern  bool    mari;
 
 namespace Ui {
 class ProjetoOmega;
@@ -63,6 +74,14 @@ private slots:
 
     void MovimentandoRobo();
 
+    void PioneerCameraOFF();
+
+    void QuadrotorCameraOFF();
+
+    void PrintLandMarkPionnerAtual();
+
+    void PrintLandMarkQuadrotorAtual();
+
     void initializeDistance(bool marker[], int predecessor[], int distance[]);
 
     int getClosestUnmarkedNode(bool marker[], int distance[]);
@@ -79,6 +98,9 @@ private slots:
 
     void on_pushButton_4_clicked();
 
+    void on_pushButton_5_clicked();
+
+    void ObjetivoAlcancado();
 
 signals:
 

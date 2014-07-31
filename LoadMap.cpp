@@ -19,6 +19,8 @@
 
 #include "LoadMap.h"
 
+//Variáveis globais relacionadas ao mapa e aos nós
+
 cord *coordenada; //Coordenadas x y das landmarks
 
 int **mapa;  //Mapa com os pesos e as conexões
@@ -29,6 +31,10 @@ int origem, alvo, tamanho;
 
 int *caminho;
 
+
+/******************************************************************************************************/
+/************************************ FUNÇÃO PARA CARREGAR O MAPA *************************************/
+/******************************************************************************************************/
 void loadMapFile(){
 
     int i = -1;
@@ -130,19 +136,5 @@ void loadMapFile(){
     // Espelha eixo y
     for (i=0; i<dim+1; i++)
         coordenada[i].y = -1*coordenada[i].y;
-
-        // Imprime a matriz mapa
-//        for (i=0; i<dim; i++){
-//            for (j=0; j<dim; j++)
-//            {
-//                cout << mapa[i][j] << " ";
-//            }
-//            cout << endl;
-//        }
-
-    //    // Imprime a matriz mapa
-    //    for (i=0; i<dim+1; i++){
-    //        cout << coordenada[i].x << " " << coordenada[i].y << endl;
-    //    }
 
 }

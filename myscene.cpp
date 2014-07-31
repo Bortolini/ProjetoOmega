@@ -1,14 +1,26 @@
 #include "myscene.h"
 
+/******************************************************************************************************/
+/*********************************** INICIALIZAÇÕES DA CLASSE *****************************************/
+/******************************************************************************************************/
 MyScene::MyScene(QObject *parent) {
     myMode = Inicial;
 }
 
+
+/******************************************************************************************************/
+/******************************** FUNÇÃO PARA SELECIONAR O ESTADO *************************************/
+/******************************************************************************************************/
 void MyScene::setMode(Mode mode)
 {
     myMode = mode;
 }
 
+
+/******************************************************************************************************/
+/*********************************** MÁQUINA DE ESTADOS DO MOUSE **************************************/
+/******************************** USADA PARA INSERIR ORIGEM E DESTINO *********************************/
+/******************************************************************************************************/
 void MyScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
 
@@ -16,6 +28,8 @@ void MyScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
         return;
 
     switch (myMode) {
+
+    //Estado para inserir a origem da navegação
     case InserirOrigem:{
         for ( i = 0 ; i < dim ; i++){
             if (mouseEvent->scenePos().x() > coordenada[i].x &&
@@ -34,10 +48,10 @@ void MyScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
                 }
         }
 
-
-
         break;
     }
+
+        //Estado para inserir o destino da navegação
     case InserirDestino:{
 
         for ( i = 0 ; i < dim ; i++){

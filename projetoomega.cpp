@@ -3,46 +3,56 @@
 QGraphicsEllipseItem **elipse;
 MyScene *scene, *scene2;
 
-int d;
+int d;   //Diâmetro das Landmarks
 
-ProjetoOmega::ProjetoOmega(QWidget *parent) :
+/******************************************************************************************************/
+/***************************** CRIAR JANELA PROJETOOMEGA E INICIALIZAÇÕES *****************************/
+/******************************************************************************************************/
+ProjetoOmega::ProjetoOmega(QWidget *parent):
     QMainWindow(parent),
     ui(new Ui::ProjetoOmega)
 {
     ui->setupUi(this);
 
+    //Gerando Local para inserir mapa
     scene = new MyScene(this);
-    scene2 = new MyScene(this);
-
-    ui->graphicsView_2->setScene(scene2);
-
     ui->graphicsView->setScene(scene);
-
     ui->graphicsView->setAlignment(Qt::AlignLeft | Qt::AlignBottom);
 
+    // Gerando local para inserir camera do pionner
+    new PioneerView(ui->frame1);
+
+
+    // Gerando local para inserir camera do quadrotor
+    new QuadrotorView(ui->frame2);
 
     //  Sinais provenientes da classe MyScene para informar quando selecinados
     //  os pontos de origem e destino
+    connect(scene, SIGNAL(OrigemInserida()), this, SLOT(OrigemInserida()));
+    connect(scene, SIGNAL(DestinoInserido()), this, SLOT(DestinoIserido()));
 
-    connect(scene, SIGNAL(OrigemInserida()),
-            this, SLOT(OrigemInserida()));
-
-    connect(scene, SIGNAL(DestinoInserido()),
-            this, SLOT(DestinoIserido()));
-
+    //Iniciando a Thread para navegação do Pioneer
     PNavigation = new PioneerNavigation(this);
-    PNavigation->start();
 
-    //  Sinais provenientes da Thread PioneerNavigation
+    //Sinais provenientes da Thread PioneerNavigation
+    connect(PNavigation, SIGNAL(RedefinirRota()), this, SLOT(RecalculandoRota()));
+    connect(PNavigation, SIGNAL(MoverRobo()), this, SLOT(MovimentandoRobo()));
+    connect(PNavigation, SIGNAL(PioneerCameraOFF()), this, SLOT(PioneerCameraOFF()));
 
-    connect(PNavigation, SIGNAL(RedefinirRota()),
-            this, SLOT(RecalculandoRota()));
+    //Sinais provenientes da Thread CameraPioneer
+    connect(PioneerCamera, SIGNAL(PioneerCameraOFF()), this, SLOT(PioneerCameraOFF()));
+    connect(PioneerCamera, SIGNAL(PrintLandMarkPionnerAtual()), this, SLOT(PrintLandMarkPionnerAtual()));
 
-    connect(PNavigation, SIGNAL(MoverRobo()),
-            this, SLOT(MovimentandoRobo()));
+    //Sinais provenientes da Thread CameraQuadrotor
+    connect(QuadrotorCamera, SIGNAL(PrintLandMarkQuadrotorAtual()), this, SLOT(PrintLandMarkQuadrotorAtual()));
+
 
 }
 
+
+/******************************************************************************************************/
+/************************************* BOTÃO PARA CARREGAR O MAPA *************************************/
+/******************************************************************************************************/
 void ProjetoOmega::on_pushButton_clicked()
 {
     robo = new QGraphicsEllipseItem;
@@ -87,14 +97,14 @@ void ProjetoOmega::on_pushButton_clicked()
         }
 
 
-    // Imprime a matriz mapa
-    for (i=0; i<dim; i++){
-        for (j=0; j<dim; j++)
-        {
-            cout << mapa[i][j] << " ";
-        }
-        cout << endl;
-    }
+    //    // Imprime a matriz mapa
+    //    for (i=0; i<dim; i++){
+    //        for (j=0; j<dim; j++)
+    //        {
+    //            cout << mapa[i][j] << " ";
+    //        }
+    //        cout << endl;
+    //    }
 
 
     for ( i = 0 ; i < dim ; i++)
@@ -102,9 +112,12 @@ void ProjetoOmega::on_pushButton_clicked()
 
     ui->textEdit->insertPlainText("Mapa pronto!\n");
 
-
 }
 
+
+/******************************************************************************************************/
+/************************************* BOTÃO PARA INSERIR CAMINHO *************************************/
+/******************************************************************************************************/
 void ProjetoOmega::on_pushButton_2_clicked()
 {
 
@@ -114,23 +127,61 @@ void ProjetoOmega::on_pushButton_2_clicked()
 
 }
 
-void ProjetoOmega::on_pushButton_3_clicked()
-{
-    nav=true;
-}
 
+/******************************************************************************************************/
+/******************************** BOTÃO PARA ABRIR CAMERA DO PIONEER **********************************/
+/******************************************************************************************************/
 void ProjetoOmega::on_pushButton_4_clicked()
 {
+    //Iniciando a Thread para câmera do Pioneer
+    PioneerCamera->start();
 
 }
 
+
+/******************************************************************************************************/
+/******************************* BOTÃO PARA ABRIR CAMERA DO QUADROTOR *********************************/
+/******************************************************************************************************/
+void ProjetoOmega::on_pushButton_5_clicked()
+{
+
+    //Iniciando a Thread para câmera do Quadrotor
+    QuadrotorCamera->start();
+
+}
+
+/******************************************************************************************************/
+/*********************************** BOTÃO PARA INICIAR A NAVEGAÇÃO ***********************************/
+/******************************************************************************************************/
+
+void ProjetoOmega::on_pushButton_3_clicked()
+{
+
+    //Inicia a navegação do Pioneer
+    PNavigation->start();
+
+    //Iniciando a Thread para câmera do Quadrotor
+    //NavigationQuadrotor->start();
+
+}
+
+
+/******************************************************************************************************/
+/****************             << endl << "Destino = " << coordenada[caminho[i+1]].x << " , " << -coordenada[caminho[i+1]].y << endl;************** SLOT CONECTADO AO SINAL ORIGEM INSERIDA *******************************/
+/******************************************************************************************************/
 void ProjetoOmega::OrigemInserida()
 {
+
     scene->setMode(MyScene::InserirDestino);
     ui->textEdit->insertPlainText("Inserir Destino.\n");
 
 }
 
+
+/******************************************************************************************************/
+/******************************** SLOT CONECTADO AO DESTINO INSERIDO **********************************/
+/********************************   CÁLCULO DE ROTA USANDO DIJKSTRA  **********************************/
+/******************************************************************************************************/
 void ProjetoOmega::DestinoIserido()
 {
     ui->textEdit->insertPlainText("Calculando menor distancia... \n");
@@ -159,7 +210,7 @@ void ProjetoOmega::DestinoIserido()
                 QPen(Qt::green,d/8)));
     }
 
-    ui->textEdit->insertPlainText("Caminho selecionado \n");
+    ui->textEdit->insertPlainText("Caminho definido \n");
 
     robo = ui->graphicsView->scene()->addEllipse(coordenada[origem].x,coordenada[origem].y,d,d,QPen (Qt::black),QBrush(Qt::red));
 
@@ -168,12 +219,17 @@ void ProjetoOmega::DestinoIserido()
 
 }
 
+
+/******************************************************************************************************/
+/***************************************** RECÁLCULO DE ROTA ******************************************/
+/******************************************************************************************************/
 void ProjetoOmega::RecalculandoRota()
 {
+    ui->textEdit->insertPlainText("Recalculando caminho \n");
 
     for ( i = 0 ; i < dim ; i++)
     {
-    elipse[i]->setBrush(QBrush(Qt::black));
+        elipse[i]->setBrush(QBrush(Qt::black));
     }
 
     elipse[origem]->setBrush(QBrush(Qt::red));
@@ -185,9 +241,7 @@ void ProjetoOmega::RecalculandoRota()
         ui->graphicsView->scene()->removeItem(rota[i]);
     }
 
-
     rota.clear();
-
 
     initializeDistance(marker, predecessor, distance);
 
@@ -202,18 +256,26 @@ void ProjetoOmega::RecalculandoRota()
                 QPen(Qt::green,d/8)));
     }
 
-    ui->textEdit->insertPlainText("Caminho selecionado \n");
+    ui->textEdit->insertPlainText("Caminho definido \n");
 }
 
+
+/******************************************************************************************************/
+/************************************ DESENHA O RASTRO DO PIONEER *************************************/
+/******************************************************************************************************/
 void ProjetoOmega::MovimentandoRobo()
 {
+    semaforo_robo.lock();
     robo->setX((robot.getX())-offset_x);
     robo->setY((-robot.getY())-offset_y);
-
-    trilha.push_back(ui->graphicsView->scene()->addEllipse((robot.getX())-offset_x+d/2,(-robot.getY())-offset_y+d/2,
-                                                           d/10,d/10,QPen (Qt::red),QBrush(Qt::red)));
+    trilha.push_back(ui->graphicsView->scene()->addEllipse((robot.getX())-offset_x+d/2,(-robot.getY())-offset_y+d/2,d/10,d/10,QPen (Qt::red),QBrush(Qt::red)));
+    semaforo_robo.unlock();
 }
 
+
+/******************************************************************************************************/
+/***************************** CORREÇÃO DE DISTÂNCIAS NO MAPA CARREGADO *******************************/
+/******************************************************************************************************/
 void ProjetoOmega::initializeDistance( bool marker[], int predecessor[], int distance[] )
 {
     int i;
@@ -228,6 +290,10 @@ void ProjetoOmega::initializeDistance( bool marker[], int predecessor[], int dis
     distance[origem]=0;
 }
 
+
+/******************************************************************************************************/
+/******************************* IDENTIFICA E SALVA O NÓ MAIS PRÓXIMO *********************************/
+/******************************************************************************************************/
 int ProjetoOmega::getClosestUnmarkedNode( bool marker[], int distance[] )
 {
     int minDistance = 99999;
@@ -244,6 +310,10 @@ int ProjetoOmega::getClosestUnmarkedNode( bool marker[], int distance[] )
     return closestUnmarkedNode;
 }
 
+
+/******************************************************************************************************/
+/*************************************** ALGORÍTMO DE DIJKSTRA ****************************************/
+/******************************************************************************************************/
 void ProjetoOmega::dijkstra( bool marker[], int distance[], int predecessor[] )
 {
     int closestUnmarkedNode;
@@ -271,6 +341,10 @@ void ProjetoOmega::dijkstra( bool marker[], int distance[], int predecessor[] )
     }
 }
 
+
+/******************************************************************************************************/
+/*********************************** ARMAZENA A ROTA DE MENOR CUSTO ***********************************/
+/******************************************************************************************************/
 void ProjetoOmega::printPath( int destination , int predecessor[], int path[], int &num )
 {
 
@@ -300,7 +374,101 @@ void ProjetoOmega::printPath( int destination , int predecessor[], int path[], i
     }
 }
 
+
+/******************************************************************************************************/
+/********************** SLOT PARA IMPRIMIR A LANDMARK ALCANÇADA PELO PIONEER **************************/
+/******************************************************************************************************/
+void ProjetoOmega::PrintLandMarkPionnerAtual()
+{
+    ui->textEdit->insertPlainText("Landmark ");
+
+    // Imprimir o número da landmark. Caso existam mais de 9 landmaks e menos de 99, serão imprimidos
+    // algarismo por algarismo
+    if (pioneer_landmark > 9)
+    {
+        ui->textEdit->insertPlainText((QString)(((int)(pioneer_landmark / 10))+48));
+        ui->textEdit->insertPlainText((QString)((pioneer_landmark % 10)+48));
+    }
+    else
+    {
+        ui->textEdit->insertPlainText((QString)(pioneer_landmark+48));
+    }
+
+    ui->textEdit->insertPlainText(" detectada pelo Pioneer \n");
+
+
+}
+
+/******************************************************************************************************/
+/********************* SLOT PARA IMPRIMIR A LANDMARK ALCANÇADA PELO QUADROTOR *************************/
+/******************************************************************************************************/
+void ProjetoOmega::PrintLandMarkQuadrotorAtual()
+{
+
+    //    ui->textEdit->insertPlainText("Landmark ");
+
+    //    // Imprimir o número da landmark. Caso existam mais de 9 landmaks e menos de 99, serão imprimidos
+    //    // algarismo por algarismo
+    //    if (quadrotor_landmark > 9)
+    //    {
+    //        ui->textEdit->insertPlainText((QString)(((int)(quadrotor_landmark / 10))+48));
+    //        ui->textEdit->insertPlainText((QString)((quadrotor_landmark % 10)+48));
+    //    }
+    //    else
+    //    {
+    //        ui->textEdit->insertPlainText((QString)(quadrotor_landmark+48));
+    //    }
+
+    //    ui->textEdit->insertPlainText(" detectada pelo Quadrotor \n");
+
+}
+
+/******************************************************************************************************/
+/************************** DESTRUSTROI A THREAD DA CÂMERA DO PIONNER *********************************/
+/******************************************************************************************************/
+void ProjetoOmega::PioneerCameraOFF()
+{
+
+    PioneerCamera->terminate();
+
+}
+
+/******************************************************************************************************/
+/************************* DESTRUSTROI A THREAD DA CÂMERA DO QUADROTOR ********************************/
+/******************************************************************************************************/
+void ProjetoOmega::QuadrotorCameraOFF()
+{
+
+    PioneerCamera->terminate();
+
+}
+
+/******************************************************************************************************/
+/********************************** DESTRUSTROI TODAS AS THREADS **************************************/
+/******************************************************************************************************/
+void ProjetoOmega::ObjetivoAlcancado()
+{
+
+    Aria::shutdown();
+    PioneerCamera->terminate();
+    QuadrotorCamera->terminate();
+    PNavigation->terminate();
+    NavigationQuadrotor->terminate();
+
+}
+
+
+
+/******************************************************************************************************/
+/******************************************** DESTRUTOR ***********************************************/
+/******************************************************************************************************/
 ProjetoOmega::~ProjetoOmega()
 {
+    Aria::shutdown();
+    PioneerCamera->terminate();
+    QuadrotorCamera->terminate();
+    PNavigation->terminate();
+    NavigationQuadrotor->terminate();
+
     delete ui;
 }

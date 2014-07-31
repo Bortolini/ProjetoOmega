@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>768</width>
-    <height>768</height>
+    <height>728</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -42,26 +42,6 @@
      </size>
     </property>
    </widget>
-   <widget class="QGraphicsView" name="graphicsView_2">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>389</y>
-      <width>369</width>
-      <height>369</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QGraphicsView" name="graphicsView_3">
-    <property name="geometry">
-     <rect>
-      <x>389</x>
-      <y>389</y>
-      <width>369</width>
-      <height>369</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
@@ -92,7 +72,7 @@
     <property name="geometry">
      <rect>
       <x>389</x>
-      <y>84</y>
+      <y>158</y>
       <width>369</width>
       <height>27</height>
      </rect>
@@ -105,26 +85,26 @@
     <property name="geometry">
      <rect>
       <x>389</x>
-      <y>121</y>
+      <y>84</y>
       <width>369</width>
       <height>27</height>
      </rect>
     </property>
     <property name="text">
-     <string>Salvar Dados</string>
+     <string>Câmera Pioneer</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_5">
     <property name="geometry">
      <rect>
       <x>389</x>
-      <y>158</y>
+      <y>121</y>
       <width>369</width>
       <height>27</height>
      </rect>
     </property>
     <property name="text">
-     <string>Emergência</string>
+     <string>Câmera Quadrotor</string>
     </property>
    </widget>
    <widget class="QTextEdit" name="textEdit">
@@ -135,6 +115,38 @@
       <width>369</width>
       <height>183</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QFrame" name="frame1">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>389</y>
+      <width>369</width>
+      <height>300</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+   </widget>
+   <widget class="QFrame" name="frame2">
+    <property name="geometry">
+     <rect>
+      <x>389</x>
+      <y>389</y>
+      <width>369</width>
+      <height>300</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
     </property>
    </widget>
   </widget>

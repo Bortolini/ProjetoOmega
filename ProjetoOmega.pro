@@ -11,17 +11,34 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        projetoomega.cpp \
-    LoadMap.cpp \
-    myscene.cpp \
-    pioneernavigation.cpp
+           projetoomega.cpp \
+           LoadMap.cpp \
+           myscene.cpp \
+           pioneernavigation.cpp \
+           MatToQImage.cpp \
+           CameraPioneer.cpp \
+           PioneerView.cpp \
+           QuadrotorView.cpp \
+           CameraQuadrotor.cpp \
+    QuadrotorNavigation.cpp
+
 
 HEADERS  += projetoomega.h \
-    LoadMap.h \
-    myscene.h \
-    pioneernavigation.h
+            LoadMap.h \
+            myscene.h \
+            pioneernavigation.h \
+            MatToQImage.h \
+            CameraPioneer.h \
+            PioneerView.h \
+            QuadrotorView.h \
+            CameraQuadrotor.h \
+    QuadrotorNavigation.h
 
-FORMS    += projetoomega.ui
+
+FORMS    += projetoomega.ui \
+    PioneerView.ui \
+    QuadrotorView.ui
+
 
 OTHER_FILES +=
 
@@ -53,3 +70,8 @@ INCLUDEPATH += $$PWD/../../../../usr/local/Aria/include
 DEPENDPATH += $$PWD/../../../../usr/local/Aria/include
 
 LIBS += `pkg-config opencv --libs`
+
+
+
+unix: CONFIG += link_pkgconfig
+unix: PKGCONFIG += zbar-qt

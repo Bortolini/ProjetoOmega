@@ -15,11 +15,11 @@
 using namespace std;
 
 
-extern QGraphicsEllipseItem **elipse;  //Landmarks
-extern cord *coordenada; //Coordenadas x y das landmarks
-extern int dim; //Dimensão do mapa
-extern int origem;
-extern int alvo;
+extern QGraphicsEllipseItem **elipse;   //Landmarks
+extern cord *coordenada;                //Coordenadas x y das landmarks
+extern int dim;                         //Dimensão do mapa
+extern int origem;                      //Nó de origem
+extern int alvo;                        //Destino
 
 
 class MyScene : public QGraphicsScene
@@ -36,8 +36,6 @@ signals:
     void OrigemInserida();
     void DestinoInserido();
     void MovimentarRobo();
-
-private slots:
 
 public slots:
     void setMode(Mode mode);        // Seta o modo de operação
