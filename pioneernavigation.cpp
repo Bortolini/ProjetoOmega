@@ -33,53 +33,53 @@ PioneerNavigation::PioneerNavigation(QObject *parent) :
 void PioneerNavigation::run()
 {
 
-        salvar = new ofstream("Dados_Pioneer.m");
+    salvar = new ofstream("Dados_Pioneer.m");
 
-        navigation();
+    navigation();
 
-        salvar->close();
+    salvar->close();
 
-//    pioneer_landmark = 2;
-//    int j;
+    //    pioneer_landmark = 2;
+    //    int j;
 
-//    ArPose destino( 9000, 0000 , 0 );
-//    x_landmark = 9500;
-//    y_landmark = 500 ;
+    //    ArPose destino( 9000, 0000 , 0 );
+    //    x_landmark = 9500;
+    //    y_landmark = 500 ;
 
-//    ArPose posicao(8500 , 18 , -1.0 );
+    //    ArPose posicao(8500 , 18 , -1.0 );
 
-//    while (true)
-//    {
+    //    while (true)
+    //    {
 
-//        j = 0;
-
-
-//        readingsList= laser.getRawReadings();     //Get list of readings
-
-//        for (it = readingsList->begin(); it != readingsList->end(); it++)
-//        {
-//            readinglaser[j] = (*it)->getRange();
-//            j++;
-//        }
+    //        j = 0;
 
 
+    //        readingsList= laser.getRawReadings();     //Get list of readings
 
-//        //Leitura do robô
+    //        for (it = readingsList->begin(); it != readingsList->end(); it++)
+    //        {
+    //            readinglaser[j] = (*it)->getRange();
+    //            j++;
+    //        }
 
 
 
-//        theta = posicao.findAngleTo(destino); // [graus]
-//        phi = robot.getTh(); // [graus] orientacao do robo
-//        alpha = calcalpha(phi, theta);
+    //        //Leitura do robô
 
-//        //        cout << endl << "Erro de orientacao = " << alpha << endl;
 
-//        //                    cout << "X = " << robot.getX() << endl;
-//        //                    cout << "Y = " << robot.getY() << endl << endl;
 
-//        emit MoverRobo();
-//        msleep(100); //teste
-//    }
+    //        theta = posicao.findAngleTo(destino); // [graus]
+    //        phi = robot.getTh(); // [graus] orientacao do robo
+    //        alpha = calcalpha(phi, theta);
+
+    //        //        cout << endl << "Erro de orientacao = " << alpha << endl;
+
+    //        //                    cout << "X = " << robot.getX() << endl;
+    //        //                    cout << "Y = " << robot.getY() << endl << endl;
+
+    //        emit MoverRobo();
+    //        ArUtil::sleep(100); //teste
+    //    }
 
 }
 
@@ -90,7 +90,7 @@ void PioneerNavigation::run()
 void PioneerNavigation::navigation()
 {
     ArPose destino(coordenada[caminho[1]].x, -coordenada[caminho[1]].y, 0); // Posicao final desejada [mm, mm , graus]
-    ArPose posicao(coordenada[caminho[0]].x, -coordenada[caminho[0]].y, 0);
+    ArPose posicao(coordenada[caminho[0]].x, -coordenada[caminho[0]].y, 0); // Posição atual do robô
 
     if (RecalcularRota == false)
     {
@@ -100,7 +100,7 @@ void PioneerNavigation::navigation()
     }
 
     //Inicialização
-    int j,i,k,l;
+    int j,i;
     RecalcularRota = false;
     Obstaculo = 0;
     contador = 0;
@@ -110,7 +110,8 @@ void PioneerNavigation::navigation()
     emit PioneerCameraOFF();
 
     //Inicio da navegação para todos os pontos
-    for( i = 0 ; (i < (tamanho - 1)) ; i++){
+    for( i = 0 ; (i < (tamanho - 1)) ; i++)
+    {
 
         posicao.setX(coordenada[caminho[i]].x);
         posicao.setY(-coordenada[caminho[i]].y);
@@ -119,8 +120,8 @@ void PioneerNavigation::navigation()
         destino.setY(-coordenada[caminho[i+1]].y);
 
         semaforo_landmark.lock();
-        x_landmark = coordenada[caminho[i+1]].x + 500;
-        y_landmark = -coordenada[caminho[i+1]].y + 500;
+        x_landmark = coordenada[caminho[i+1]].x + 1000;
+        y_landmark = -coordenada[caminho[i+1]].y - 1000;
         semaforo_landmark.unlock();
 
         cout << endl << "Origem = " << coordenada[caminho[i]].x << " , " <<  -coordenada[caminho[i]].y
@@ -131,7 +132,6 @@ void PioneerNavigation::navigation()
         rho = (posicao.findDistanceTo(destino))/1000.0; // Erro de posicao do robo [m]
 
         atualizar_landmark_pioneer = true;
-
 
         while(rho > 0.05) // erro maior que 5 cm
         {
@@ -176,13 +176,15 @@ void PioneerNavigation::navigation()
             }
             semaforo_leitura_laser.unlock();
 
-            if ( Obstaculo >= 80 ){
+            if ( Obstaculo >= 80 )
+            {
                 RecalcularRota = true;
                 break;
             }
 
 
-            if ( (reading < 600.0) && (rho >= (reading/1000.0) )){
+            if ( (reading < 600.0) && (rho >= (reading/1000.0) ))
+            {
 
                 zeta = sign(readingAngle) * (fabs(readingAngle)-90) - alpha;
 
@@ -202,29 +204,8 @@ void PioneerNavigation::navigation()
 
                 destino.setX(coordenada[caminho[i+1]].x);
                 destino.setY(-coordenada[caminho[i+1]].y);
-                //
-                //                x_landmark = coordenada[caminho[i+1]].x + 1000;
-                //                y_landmark = -coordenada[caminho[i+1]].y + 1000;
-                //
+
             }
-
-            //            else if((reading2 < 1100.0) && (rho >= (reading2/1000.0) )){
-
-            //                readingsList = thisLaser->getRawReadings();     //Get list of readings
-
-
-            //                zeta = sign(readingAngle2) * (fabs(readingAngle2)-90) - alpha;
-
-            //                xv = robot.getX()/1000.0 + cos(theta * PI / 180.0);
-            //                yv = robot.getY()/1000.0 + sin(theta * PI / 180.0);
-
-            //                destino.setX( (((xv-robot.getX()) * cos(zeta * PI / 180)) + ((yv-robot.getY()) * sin(zeta * PI / 180)) * 1000.0 ));
-            //                destino.setY( -(-(xv-robot.getX()) * sin(zeta * PI / 180) + ((yv-robot.getY())*cos(zeta * PI / 180)) * 1000.0 ));
-
-            //                alpha = alpha + zeta;
-
-            //            }
-
 
             //Cálculo do controlador
             rho = posicao.findDistanceTo(destino)/1000.0;
@@ -244,29 +225,29 @@ void PioneerNavigation::navigation()
             semaforo_robo.unlock();
 
             contador++;
-            msleep(100);
-            // ArUtil::sleep(100);
+            ArUtil::sleep(100);
 
         }
 
-        if ( RecalcularRota == true ){
+        if ( RecalcularRota == true )
+        {
 
             emit PioneerCameraOFF();
 
-
+            semaforo_robo.lock();
             robot.setVel(0);
             robot.setRotVel(0);
-
             posicao.setX(robot.getX());
             posicao.setY(robot.getY());
-
+            semaforo_robo.unlock();
 
             destino.setX(coordenada[caminho[i]].x);
             destino.setY(-coordenada[caminho[i]].y);
 
-            x_landmark = coordenada[caminho[i]].x + 500;
-            y_landmark = -coordenada[caminho[i]].y + 500;
-
+            semaforo_landmark.lock();
+            x_landmark = coordenada[caminho[i]].x + 1000;
+            y_landmark = -coordenada[caminho[i]].y - 1000;
+            semaforo_landmark.unlock();
 
             rho = (posicao.findDistanceTo(destino))/1000.0; // Erro de posicao do robo [m]
 
@@ -282,17 +263,17 @@ void PioneerNavigation::navigation()
                 {
                     atualizar_landmark_pioneer = false;
 
-                    pioneer_landmark = (caminho[i+1] + 1);
+                    pioneer_landmark = (caminho[i+1]);
 
                     //Iniciando a Thread para câmera do Pioneer
                     PioneerCamera->start();
                 }
 
-
+                semaforo_leitura_laser.lock();
                 reading = laser.currentReadingPolar( -90, 90,&readingAngle );      //Get minimum reading and angle
                 reading2 = laser.currentReadingPolar( -20,20,&readingAngle2 );     //Get minimum reading and angle
                 readingsList = laser.getRawReadings();                              //Get list of readings
-
+                semaforo_leitura_laser.unlock();
 
                 j=0;
 
@@ -305,25 +286,24 @@ void PioneerNavigation::navigation()
                 }
 
 
-
                 theta = posicao.findAngleTo(destino); // [graus]
+                semaforo_robo.lock();
                 phi = robot.getTh(); // [graus] orientacao do robo
                 alpha = calcalpha(phi, theta);
+                semaforo_robo.unlock();
 
 
                 if ( (reading < 600.0) && (rho >= (reading/1000.0) )){
 
 
-
                     zeta = sign(readingAngle) * (fabs(readingAngle)-90) - alpha;
 
-
+                    semaforo_robo.lock();
                     xv = robot.getX()/1000.0 + cos(theta * PI / 180.0);
                     yv = robot.getY()/1000.0 + sin(theta * PI / 180.0);
-
                     destino.setX( (((xv-robot.getX()) * cos(zeta * PI / 180)) + ((yv-robot.getY()) * sin(zeta * PI / 180)) * 1000.0 ));
                     destino.setY( -(-(xv-robot.getX()) * sin(zeta * PI / 180) + ((yv-robot.getY())*cos(zeta * PI / 180)) * 1000.0 ));
-
+                    semaforo_robo.unlock();
 
                     alpha = alpha + zeta;
 
@@ -335,10 +315,6 @@ void PioneerNavigation::navigation()
 
                     destino.setX(coordenada[caminho[i]].x);
                     destino.setY(-coordenada[caminho[i]].y);
-                    //
-                    //                    x_landmark = coordenada[caminho[i]].x + 1000;
-                    //                    y_landmark = -coordenada[caminho[i]].y + 1000;
-                    //
 
                 }
 
@@ -346,18 +322,20 @@ void PioneerNavigation::navigation()
                 v = (kv * tanh(rho) * cos(alpha * PI / 180.0)) * 1000.0 ; //[mm/s]
                 w = (kw * (alpha * PI / 180.0) + kv * (tanh(rho)/(rho)) * sin(alpha * PI / 180.0) *cos(alpha * PI / 180.0))*180.0/PI;
 
-
+                semaforo_robo.lock();
                 robot.setVel(v);
                 robot.setRotVel(w);
                 vr = robot.getVel();
                 wr = robot.getRotVel();
                 posicao = robot.getPose();
-
+                semaforo_robo.unlock();
 
                 rho = posicao.findDistanceTo(destino)/1000.0;
 
+                semaforo_robo.lock();
                 (*salvar) << contador/10.0 << " " << v  << " " << w  << " " << vr  << " " << wr
                           << " " << posicao.getX() << " " << posicao.getY() << " " << rho << " " << pioneer_landmark << endl;
+                semaforo_robo.unlock();
 
                 contador++;
 
@@ -367,32 +345,125 @@ void PioneerNavigation::navigation()
 
             if (PontoAtingido == false)
             {
-
+                semaforo_robo.lock();
                 robot.setVel(0);
                 robot.setRotVel(0);
+                semaforo_robo.unlock();
                 ArUtil::sleep(500);
 
                 // Girando em torno do eixo, procurando a landmark
+                semaforo_robo.lock();
                 robot.setRotVel(10.0);
+                semaforo_robo.unlock();
+
                 ArUtil::sleep(36000);
+                semaforo_robo.lock();
                 robot.setRotVel(0);
-
-
+                semaforo_robo.unlock();
 
                 if (PontoAtingido == false)
                 {
                     RecalcularRota = true;
                     break;
                 }
-                else
+
+                ///////////////////////////////////
+                // Correção do erro de odometria //
+                ///////////////////////////////////
+
+                semaforo_robo.lock();
+                posicao.setX(robot.getX());
+                posicao.setY(robot.getY());
+                semaforo_robo.unlock();
+
+                rho = posicao.findDistanceTo(destino)/1000.0;
+
+                while(rho > 0.05) // erro maior que 5 cm
                 {
-                    PontoAtingido = false;
+                    emit MoverRobo();
+
+                    semaforo_leitura_laser.lock();
+                    reading = laser.currentReadingPolar( -90, 90,&readingAngle );      //Get minimum reading and angle
+                    reading2 = laser.currentReadingPolar( -20,20,&readingAngle2 );     //Get minimum reading and angle
+                    readingsList = laser.getRawReadings();                             //Get list of readings
+                    semaforo_leitura_laser.unlock();
+
+                    semaforo_robo.lock();
+                    theta = posicao.findAngleTo(destino); // [graus]
+                    phi = robot.getTh();                  // [graus] orientacao do robo
+                    alpha = calcalpha(phi, theta);
+                    semaforo_robo.unlock();
+
+                    j = 0;
+
+                    semaforo_leitura_laser.lock();
+                    for (it = readingsList->begin(); it != readingsList->end(); it++)
+                    {
+
+                        readinglaser[j] = (*it)->getRange();
+
+                        if ((readinglaser[j] < 1200.0) && ( j > 45 ) && ( j < 135 ))
+
+                            j++;
+
+                    }
+                    semaforo_leitura_laser.unlock();
+
+                    if ( (reading < 600.0) && (rho >= (reading/1000.0) )){
+
+                        zeta = sign(readingAngle) * (fabs(readingAngle)-90) - alpha;
+
+                        semaforo_robo.lock();
+                        xv = robot.getX()/1000.0 + cos(theta * PI / 180.0);
+                        yv = robot.getY()/1000.0 + sin(theta * PI / 180.0);
+
+                        destino.setX( (((xv-robot.getX()) * cos(zeta * PI / 180)) + ((yv-robot.getY()) * sin(zeta * PI / 180)) * 1000.0 ));
+                        destino.setY( -(-(xv-robot.getX()) * sin(zeta * PI / 180) + ((yv-robot.getY()) * cos(zeta * PI / 180)) * 1000.0 ));
+                        semaforo_robo.unlock();
+
+                        alpha = alpha + zeta;
+
+                    }
+                    else
+                    {
+
+                        destino.setX(coordenada[caminho[i+1]].x);
+                        destino.setY(-coordenada[caminho[i+1]].y);
+
+                    }
+
+                    //Cálculo do controlador
+                    rho = posicao.findDistanceTo(destino)/1000.0;
+
+                    v = (kv * tanh(rho) * cos(alpha * PI / 180.0)) * 1000.0 ; //[mm/s]
+                    w = (kw * (alpha * PI / 180.0) + kv * (tanh(rho)/(rho)) * sin(alpha * PI / 180.0) *cos(alpha * PI / 180.0))*180.0/PI;
+
+                    semaforo_robo.lock();
+                    robot.setVel(v);
+                    robot.setRotVel(w);
+                    vr = robot.getVel();
+                    wr = robot.getRotVel();
+                    posicao = robot.getPose();
+                    rho = posicao.findDistanceTo(destino)/1000.0;
+                    (*salvar) << contador/10.0 << " " << v  << " " << w  << " " << vr  << " " << wr
+                              << " " << robot.getX() << " " << robot.getY() << " " << rho << " " << pioneer_landmark << endl;
+                    semaforo_robo.unlock();
+
+                    contador++;
+                    ArUtil::sleep(100);
+
                 }
+                emit PioneerCameraOFF();
+                ArUtil::sleep(500);
+                PontoAtingido = false;
+
+
 
             }
             else
             {
-
+                emit PioneerCameraOFF();
+                ArUtil::sleep(500);
                 PontoAtingido = false;
 
             }
@@ -404,13 +475,22 @@ void PioneerNavigation::navigation()
         if (PontoAtingido == false)
         {
 
+            semaforo_robo.lock();
             robot.setVel(0);
             robot.setRotVel(0);
+            semaforo_robo.unlock();
             ArUtil::sleep(500);
-            robot.setRotVel(10.0);
-            ArUtil::sleep(36000);
-            robot.setRotVel(0);
 
+            semaforo_robo.lock();
+            robot.setRotVel(10.0);
+            semaforo_robo.unlock();
+            ArUtil::sleep(36000);
+
+            semaforo_robo.lock();
+            robot.setRotVel(0);
+            semaforo_robo.unlock();
+
+            ArUtil::sleep(500);
 
             if (PontoAtingido == false)
             {
@@ -420,17 +500,18 @@ void PioneerNavigation::navigation()
 
                 cout << endl << "Recalcular a Rota." << endl;
 
-
+                semaforo_robo.lock();
                 posicao.setX(robot.getX());
                 posicao.setY(robot.getY());
-
+                semaforo_robo.unlock();
 
                 destino.setX(coordenada[caminho[i]].x);
                 destino.setY(-coordenada[caminho[i]].y);
 
-                x_landmark = coordenada[caminho[i]].x + 500;
-                y_landmark = -coordenada[caminho[i]].y + 500;
-
+                semaforo_leitura_laser.lock();
+                x_landmark = coordenada[caminho[i]].x + 1000;
+                y_landmark = -coordenada[caminho[i]].y - 1000;
+                semaforo_landmark.unlock();
 
                 rho = (posicao.findDistanceTo(destino))/1000.0; // Erro de posicao do robo [m]
 
@@ -452,11 +533,11 @@ void PioneerNavigation::navigation()
                         PioneerCamera->start();
                     }
 
-
+                    semaforo_leitura_laser.lock();
                     reading = laser.currentReadingPolar( -90, 90,&readingAngle );      //Get minimum reading and angle
                     reading2 = laser.currentReadingPolar( -20,20,&readingAngle2 );     //Get minimum reading and angle
                     readingsList= laser.getRawReadings();     //Get list of readings
-
+                    semaforo_leitura_laser.unlock();
 
                     j=0;
 
@@ -468,27 +549,22 @@ void PioneerNavigation::navigation()
 
                     }
 
-
-
                     theta = posicao.findAngleTo(destino); // [graus]
+                    semaforo_robo.lock();
                     phi = robot.getTh(); // [graus] orientacao do robo
+                    semaforo_robo.unlock();
                     alpha = calcalpha(phi, theta);
-
-
 
                     if ( (reading < 600.0) && (rho >= (reading/1000.0) )){
 
-
-
                         zeta = sign(readingAngle) * (fabs(readingAngle)-90) - alpha;
 
-
+                        semaforo_robo.lock();
                         xv = robot.getX()/1000.0 + cos(theta * PI / 180.0);
                         yv = robot.getY()/1000.0 + sin(theta * PI / 180.0);
-
                         destino.setX( (((xv-robot.getX()) * cos(zeta * PI / 180)) + ((yv-robot.getY()) * sin(zeta * PI / 180)) * 1000.0 ));
                         destino.setY( -(-(xv-robot.getX()) * sin(zeta * PI / 180) + ((yv-robot.getY())*cos(zeta * PI / 180)) * 1000.0 ));
-
+                        semaforo_robo.unlock();
 
                         alpha = alpha + zeta;
 
@@ -498,10 +574,6 @@ void PioneerNavigation::navigation()
 
                         destino.setX(coordenada[caminho[i]].x);
                         destino.setY(-coordenada[caminho[i]].y);
-                        //
-                        //                        x_landmark = coordenada[caminho[i]].x + 1000;
-                        //                        y_landmark = -coordenada[caminho[i]].y + 1000;
-                        //
 
                     }
 
@@ -510,18 +582,20 @@ void PioneerNavigation::navigation()
                     v = (kv * tanh(rho) * cos(alpha * PI / 180.0)) * 1000.0 ; //[mm/s]
                     w = (kw * (alpha * PI / 180.0) + kv * (tanh(rho)/(rho)) * sin(alpha * PI / 180.0) *cos(alpha * PI / 180.0))*180.0/PI;
 
-
+                    semaforo_robo.lock();
                     robot.setVel(v);
                     robot.setRotVel(w);
                     vr = robot.getVel();
                     wr = robot.getRotVel();
                     posicao = robot.getPose();
-
+                    semaforo_robo.unlock();
 
                     rho = posicao.findDistanceTo(destino)/1000.0;
 
+                    semaforo_robo.lock();
                     (*salvar) << contador/10.0 << " " << v  << " " << w  << " " << vr  << " " << wr
                               << " " << posicao.getX() << " " << posicao.getY() << " " << rho << " " << pioneer_landmark << endl;
+                    semaforo_robo.unlock();
 
                     contador++;
 
@@ -534,24 +608,123 @@ void PioneerNavigation::navigation()
             }
             else
             {
+
+                ///////////////////////////////////
+                // Correção do erro de odometria //
+                ///////////////////////////////////
+                emit PioneerCameraOFF();
+                semaforo_robo.lock();
+                posicao.setX(robot.getX());
+                posicao.setY(robot.getY());
+                destino.setX(coordenada[caminho[i+1]].x);
+                destino.setY(-coordenada[caminho[i+1]].y);
+                semaforo_robo.unlock();
+
+                rho = posicao.findDistanceTo(destino)/1000.0;
+
+                cout << rho << endl << endl;
+
+                while(rho > 0.05) // erro maior que 5 cm
+                {
+                    emit MoverRobo();
+
+                    semaforo_leitura_laser.lock();
+                    reading = laser.currentReadingPolar( -90, 90,&readingAngle );      //Get minimum reading and angle
+                    reading2 = laser.currentReadingPolar( -20,20,&readingAngle2 );     //Get minimum reading and angle
+                    readingsList = laser.getRawReadings();                             //Get list of readings
+                    semaforo_leitura_laser.unlock();
+
+                    semaforo_robo.lock();
+                    theta = posicao.findAngleTo(destino); // [graus]
+                    phi = robot.getTh();                  // [graus] orientacao do robo
+                    alpha = calcalpha(phi, theta);
+                    semaforo_robo.unlock();
+
+                    j = 0;
+
+                    semaforo_leitura_laser.lock();
+                    for (it = readingsList->begin(); it != readingsList->end(); it++)
+                    {
+
+                        readinglaser[j] = (*it)->getRange();
+
+                        if ((readinglaser[j] < 1200.0) && ( j > 45 ) && ( j < 135 ))
+
+                            j++;
+
+                    }
+                    semaforo_leitura_laser.unlock();
+
+                    if ( (reading < 600.0) && (rho >= (reading/1000.0) )){
+
+                        zeta = sign(readingAngle) * (fabs(readingAngle)-90) - alpha;
+
+                        semaforo_robo.lock();
+                        xv = robot.getX()/1000.0 + cos(theta * PI / 180.0);
+                        yv = robot.getY()/1000.0 + sin(theta * PI / 180.0);
+
+                        destino.setX( (((xv-robot.getX()) * cos(zeta * PI / 180)) + ((yv-robot.getY()) * sin(zeta * PI / 180)) * 1000.0 ));
+                        destino.setY( -(-(xv-robot.getX()) * sin(zeta * PI / 180) + ((yv-robot.getY()) * cos(zeta * PI / 180)) * 1000.0 ));
+                        semaforo_robo.unlock();
+
+                        alpha = alpha + zeta;
+
+                    }
+                    else
+                    {
+
+                        destino.setX(coordenada[caminho[i+1]].x);
+                        destino.setY(-coordenada[caminho[i+1]].y);
+
+                    }
+
+                    //Cálculo do controlador
+                    rho = posicao.findDistanceTo(destino)/1000.0;
+
+                    v = (kv * tanh(rho) * cos(alpha * PI / 180.0)) * 1000.0 ; //[mm/s]
+                    w = (kw * (alpha * PI / 180.0) + kv * (tanh(rho)/(rho)) * sin(alpha * PI / 180.0) *cos(alpha * PI / 180.0))*180.0/PI;
+
+                    semaforo_robo.lock();
+                    robot.setVel(v);
+                    robot.setRotVel(w);
+                    vr = robot.getVel();
+                    wr = robot.getRotVel();
+                    posicao = robot.getPose();
+                    rho = posicao.findDistanceTo(destino)/1000.0;
+                    (*salvar) << contador/10.0 << " " << v  << " " << w  << " " << vr  << " " << wr
+                              << " " << robot.getX() << " " << robot.getY() << " " << rho << " " << pioneer_landmark << endl;
+                    semaforo_robo.unlock();
+
+                    contador++;
+                    ArUtil::sleep(100);
+
+                }
+
+                //emit PioneerCameraOFF();
+                ArUtil::sleep(500);
                 PontoAtingido = false;
+
             }
 
         }
         else
         {
+
+            emit PioneerCameraOFF();
+            ArUtil::sleep(500);
             PontoAtingido = false;
+
         }
 
     }
 
-
+    semaforo_robo.lock();
     robot.setVel(0);
     robot.setRotVel(0);
+    semaforo_robo.unlock();
 
-
-    if (RecalcularRota == true){
-
+    if (RecalcularRota == true)
+    {
         //Alterando mapa inserindo impedimento da rota atual e recalculando rota
         mapa[caminho[i]][caminho[i+1]] = 99999;
         mapa[caminho[i+1]][caminho[i]] = 99999;
@@ -567,7 +740,6 @@ void PioneerNavigation::navigation()
         navigation();
 
     }
-
 
     emit ObjetivoAlcancado();
 

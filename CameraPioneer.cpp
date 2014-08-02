@@ -224,7 +224,7 @@ void CameraPioneer::run()
                             //
                             // Finaliza a busca da landmark
                             k= 71;
-                            msleep(100);
+                            msleep(500);
 
                             break;
                         }
