@@ -62,15 +62,17 @@ private slots:
 
     double  calcalpha(double orient, double erdest);
     double  sign(double phi);
-    void setMode(Mode mode);            // Seta o modo de operação da máquina de estados para detecção da landmark
+    void    setMode(Mode mode);            // Seta o modo de operação da máquina de estados para detecção da landmark
 
 
 protected:
 
     void navigation();
+    void controlador( ArPose posicao , ArPose destino );        //Controlador de Posição Final
+    void controlador_giro( ArPose posicao , ArPose destino );   //Controlador de giro corrigir a direção de navegação para a próxima landmark
+
 
 private:
-
 
     Mode ModoOperacao;                  //Seta o modo de operação
 
@@ -79,9 +81,15 @@ private:
     const std::list<ArSensorReading *> *readingsList;
     std::list<ArSensorReading *>::const_iterator it;
 
-    bool    RecalcularRota;
-    int     Obstaculo, cont;
-    bool    atualizar_landmark_pioneer;
+    bool
+    RecalcularRota;
+
+    int
+    Obstaculo,
+    i;
+
+    bool
+    atualizar_landmark_pioneer;
 
     double reading, readingAngle, reading2, readingAngle2,    //To hold minimum reading and angle
     contador,

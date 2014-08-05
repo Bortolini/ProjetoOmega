@@ -75,8 +75,8 @@ private:
     width,height,       // Dados da imagem
     inicio,fim,         // Posições do vetor de medidas onde foi identificada a lankmark
     indice_landmark;            // Posição da landmark medida pelo laser
-//    erro_x,             // Erro calculado na direção x
-//    erro_y;             // Erro calcualdo na direção y
+    //    erro_x,             // Erro calculado na direção x
+    //    erro_y;             // Erro calcualdo na direção y
 
     double
     angle,              // Posição da landmark reconehcida pela câmera

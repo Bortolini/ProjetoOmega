@@ -38,6 +38,7 @@ ProjetoOmega::ProjetoOmega(QWidget *parent):
     connect(PNavigation, SIGNAL(RedefinirRota()), this, SLOT(RecalculandoRota()));
     connect(PNavigation, SIGNAL(MoverRobo()), this, SLOT(MovimentandoRobo()));
     connect(PNavigation, SIGNAL(PioneerCameraOFF()), this, SLOT(PioneerCameraOFF()));
+    connect(PNavigation, SIGNAL(ObjetivoAlcancado()), this, SLOT(ObjetivoAlcancado()));
 
     //Sinais provenientes da Thread CameraPioneer
     connect(PioneerCamera, SIGNAL(PioneerCameraOFF()), this, SLOT(PioneerCameraOFF()));
