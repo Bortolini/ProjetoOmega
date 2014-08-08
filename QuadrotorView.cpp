@@ -34,7 +34,7 @@ void QuadrotorView::ProcessingImageFromQuadrotor()
     qframe_quadrotor = MatToQImage(frame_quadrotor);
     ui->graphicsView->scene()->clear();
     ui->graphicsView->scene()->addPixmap(QPixmap::fromImage(qframe_quadrotor).scaled(ui->graphicsView->width(),ui->graphicsView->height(),Qt::KeepAspectRatio));
-    ui->graphicsView->scene()->addText("To na Area!!!!");
+    //ui->graphicsView->scene()->addText("To na Area!!!!");
 
 }
 

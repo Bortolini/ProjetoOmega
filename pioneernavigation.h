@@ -70,7 +70,7 @@ protected:
     void navigation();
     void controlador( ArPose posicao , ArPose destino );        //Controlador de Posição Final
     void controlador_giro( ArPose posicao , ArPose destino );   //Controlador de giro corrigir a direção de navegação para a próxima landmark
-
+    void controlador_busca_landmark( );          //Controlador para girar em busca da landmark;
 
 private:
 

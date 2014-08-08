@@ -3,6 +3,7 @@
 QGraphicsEllipseItem **elipse;
 MyScene *scene, *scene2;
 
+
 int d;   //Diâmetro das Landmarks
 
 /******************************************************************************************************/
@@ -168,7 +169,7 @@ void ProjetoOmega::on_pushButton_3_clicked()
 
 
 /******************************************************************************************************/
-/****************             << endl << "Destino = " << coordenada[caminho[i+1]].x << " , " << -coordenada[caminho[i+1]].y << endl;************** SLOT CONECTADO AO SINAL ORIGEM INSERIDA *******************************/
+/****************************** SLOT CONECTADO AO SINAL ORIGEM INSERIDA *******************************/
 /******************************************************************************************************/
 void ProjetoOmega::OrigemInserida()
 {
@@ -268,7 +269,7 @@ void ProjetoOmega::MovimentandoRobo()
 {
     robo->setX((robot.getX())-offset_x);
     robo->setY((-robot.getY())-offset_y);
-    trilha.push_back(ui->graphicsView->scene()->addEllipse((robot.getX())-offset_x+d/2,(-robot.getY())-offset_y+d/2,d/10,d/10,QPen (Qt::red),QBrush(Qt::red)));
+    trilha.push_back(ui->graphicsView->scene()->addEllipse((robot.getX())+d/2,(-robot.getY())+d/2,d/10,d/10,QPen (Qt::red),QBrush(Qt::red)));
 }
 
 

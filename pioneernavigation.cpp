@@ -15,6 +15,7 @@ pioneer_landmark,
 x_landmark,             // Coordenada x da landmark
 y_landmark;             // Coordenada y da landmark
 
+
 /******************************************************************************************************/
 /******************************************* INICIALIZAÇÕES *******************************************/
 /******************************************************************************************************/
@@ -52,8 +53,9 @@ void PioneerNavigation::run()
 /******************************************************************************************************/
 void PioneerNavigation::navigation()
 {
-    ArPose destino(coordenada[caminho[1]].x, -coordenada[caminho[1]].y, 0); // Posicao final desejada [mm, mm , graus]
-    ArPose posicao(coordenada[caminho[0]].x, -coordenada[caminho[0]].y, 0); // Posição atual do robô
+    ArPose destino(coordenada[caminho[1]].x, -coordenada[caminho[1]].y,(double)0.0); // Posicao final desejada [mm, mm , graus]
+    ArPose posicao(coordenada[caminho[0]].x, -coordenada[caminho[0]].y, (double)0.0); // Posição atual do robô
+
 
     // Atualiza posição do robô se a função for chamada de um recálculo de rota
     if (RecalcularRota == false)
@@ -62,13 +64,11 @@ void PioneerNavigation::navigation()
     }
 
     //Inicialização
-    RecalcularRota = false; // recalcula rota
+    RecalcularRota = false; // Solicita o recálculo de rota do Robô
 
     //Inicio da navegação para todos os pontos
     for( i = 0 ; (i < (tamanho - 1)) ; i++)
     {
-
-        posicao.setPose(robot.getPose());
 
         destino.setX(coordenada[caminho[i+1]].x);
         destino.setY(-coordenada[caminho[i+1]].y);
@@ -82,14 +82,18 @@ void PioneerNavigation::navigation()
 
         //Solicita encerramento da Thread da Câmera do Pioneer
         emit PioneerCameraOFF();
+
         controlador_giro( posicao , destino ); // Controlador para corrigir a orientação do robô
-        ArUtil::sleep(1000);
+
+        ArUtil::sleep(500);
+
         controlador( posicao , destino );      //Controlador de posição final
 
 
         if ( RecalcularRota == true )
         {
-            emit PioneerCameraOFF();
+            if (atualizar_landmark_pioneer == false)
+                emit PioneerCameraOFF();
 
             destino.setX(coordenada[caminho[i]].x);
             destino.setY(-coordenada[caminho[i]].y);
@@ -99,47 +103,39 @@ void PioneerNavigation::navigation()
             y_landmark = -coordenada[caminho[i]].y - 1000;
             semaforo_landmark.unlock();
 
-            rho = (posicao.findDistanceTo(destino))/1000.0; // Erro de posicao do robo [m]
             atualizar_landmark_pioneer = true;
 
-            ArUtil::sleep(1000);
+            ArUtil::sleep(500);
 
+            posicao = robot.getPose();
             controlador_giro( posicao , destino ); // Controlador para corrigir a orientação do robô
-            ArUtil::sleep(1000);
+
+            ArUtil::sleep(500);
+
+            posicao = robot.getPose();
             controlador( posicao , destino ); //Controlador de posição final
+
 
             if (PontoAtingido == false)
             {
                 //Girando em torno do eixo, procurando a landmark
-                semaforo_robo.lock();
-                robot.setRotVel(10.0);
-                semaforo_robo.unlock();
-
-                ArUtil::sleep(36000);
-
-                semaforo_robo.lock();
-                robot.setRotVel(0);
-                semaforo_robo.unlock();
+                controlador_busca_landmark();
 
                 if (PontoAtingido == false)
                 {
-                    RecalcularRota = true;
+                    emit ObjetivoAlcancado();
                     break;
                 }
 
                 ///////////////////////////////////
                 // Correção do erro de odometria //
                 ///////////////////////////////////
-
-                semaforo_robo.lock();
-                posicao.setX(robot.getX());
-                posicao.setY(robot.getY());
-                semaforo_robo.unlock();
-
-                rho = posicao.findDistanceTo(destino)/1000.0;
+                posicao = robot.getPose();
 
                 controlador_giro( posicao , destino ); // Controlador para corrigir a orientação do robô
-                ArUtil::sleep(1000);
+                ArUtil::sleep(500);
+
+                posicao = robot.getPose();
                 controlador( posicao , destino );      //Controlador de posição final
 
                 ArUtil::sleep(500);
@@ -157,29 +153,19 @@ void PioneerNavigation::navigation()
 
         if (PontoAtingido == false)
         {
-            semaforo_robo.lock();
-            robot.setRotVel(10.0);
-            semaforo_robo.unlock();
-            ArUtil::sleep(36000);
 
-            semaforo_robo.lock();
-            robot.setRotVel(0);
-            semaforo_robo.unlock();
-
-            emit PioneerCameraOFF();
-
+            //Girando em torno do eixo, procurando a landmark
+            controlador_busca_landmark();
             ArUtil::sleep(500);
+
 
             if (PontoAtingido == false)
             {
-                emit PioneerCameraOFF();
 
                 RecalcularRota = true;
 
-                semaforo_robo.lock();
-                posicao.setX(robot.getX());
-                posicao.setY(robot.getY());
-                semaforo_robo.unlock();
+                if (atualizar_landmark_pioneer == false)
+                    emit PioneerCameraOFF();
 
                 destino.setX(coordenada[caminho[i]].x);
                 destino.setY(-coordenada[caminho[i]].y);
@@ -189,46 +175,46 @@ void PioneerNavigation::navigation()
                 y_landmark = -coordenada[caminho[i]].y - 1000;
                 semaforo_landmark.unlock();
 
-                ArUtil::sleep(1000);
-
                 atualizar_landmark_pioneer = true;
 
+                ArUtil::sleep(500);
+
+                posicao = robot.getPose();
                 controlador_giro( posicao , destino ); // Controlador para corrigir a orientação do robô
-                ArUtil::sleep(1000);
-                controlador( posicao , destino );      //Controlador de posição final
-
-                if ( PontoAtingido == false )
-                {
-                    emit ObjetivoAlcancado();
-                }
-
-                break;
-            }
-            else
-            {
-                ///////////////////////////////////
-                // Correção do erro de odometria //
-                ///////////////////////////////////
-
-                semaforo_robo.lock();
-                posicao.setX(robot.getX());
-                posicao.setY(robot.getY());
-                destino.setX(coordenada[caminho[i+1]].x);
-                destino.setY(-coordenada[caminho[i+1]].y);
-                semaforo_robo.unlock();
-
-                controlador_giro( posicao , destino ); // Controlador para corrigir a orientação do robô
-                ArUtil::sleep(1000);
-                controlador( posicao , destino );      //Controlador de posição final
 
                 ArUtil::sleep(500);
-                PontoAtingido = false;
+
+                posicao = robot.getPose();
+                controlador( posicao , destino ); //Controlador de posição final
+
+                if (PontoAtingido == false)
+                {
+                    //Girando em torno do eixo, procurando a landmark
+                    controlador_busca_landmark();
+
+                    if (PontoAtingido == false)
+                    {
+                        emit ObjetivoAlcancado();
+                        break;
+                    }
+
+                }
+
             }
-        }
-        else
-        {
+            ///////////////////////////////////
+            // Correção do erro de odometria //
+            ///////////////////////////////////
+            posicao = robot.getPose();
+
+            controlador_giro( posicao , destino ); // Controlador para corrigir a orientação do robô
+            ArUtil::sleep(500);
+
+            posicao = robot.getPose();
+            controlador( posicao , destino );      //Controlador de posição final
+
             ArUtil::sleep(500);
             PontoAtingido = false;
+
         }
     }
 
@@ -327,7 +313,6 @@ void PioneerNavigation::controlador( ArPose posicao , ArPose destino )
     kv = 0.3;
     kw = 0.8;
 
-
     while(rho > 0.05) // erro maior que 5 cm
     {
         emit MoverRobo();
@@ -377,6 +362,8 @@ void PioneerNavigation::controlador( ArPose posicao , ArPose destino )
         if ( Obstaculo >= 80 )
         {
             RecalcularRota = true;
+            robot.setVel(0.0);
+            robot.setRotVel(0.0);
             break;
         }
 
@@ -448,8 +435,9 @@ void PioneerNavigation::controlador_giro( ArPose posicao , ArPose destino )
     alpha = calcalpha(phi, theta);
     semaforo_robo.unlock();
 
-    while(alpha > 2.0) // erro maior que 0.5 graus
+    while( (alpha > 2.0) || (alpha < -2.0) ) // erro maior que 0.5 graus
     {
+
         emit MoverRobo();
 
         semaforo_leitura_laser.lock();
@@ -528,4 +516,69 @@ void PioneerNavigation::controlador_giro( ArPose posicao , ArPose destino )
         contador++;
         ArUtil::sleep(100);
     }
+}
+
+/******************************************************************************************************/
+/********************************* FUNÇÃO PARA O CONTROLADOR DE GIRO 2 *********************************/
+/******************************************************************************************************/
+void PioneerNavigation::controlador_busca_landmark( )
+{
+    int
+            j,
+            psi = 0;
+
+    //inicializações
+    kv = 0.0;
+    kw = 0.4;
+
+    robot.setVel(0.0);
+    robot.setRotVel(10.0);
+
+    while( psi < 360 ) // erro maior que 0.5 graus
+    {
+        if (PontoAtingido)
+        {
+            atualizar_landmark_pioneer = false;
+
+            pioneer_landmark = (caminho[i+1] + 1);
+            break;
+        }
+
+        emit MoverRobo();
+
+        semaforo_leitura_laser.lock();
+        readingsList = laser.getRawReadings();                             //Get list of readings
+        semaforo_leitura_laser.unlock();
+
+        j = 0;
+
+        semaforo_leitura_laser.lock();
+        for (it = readingsList->begin(); it != readingsList->end(); it++)
+        {
+
+            readinglaser[j] = (*it)->getRange();
+
+            if (readinglaser[j] > 5000.0)
+                readinglaser[j] = 5000.0;
+            j++;
+
+        }
+        semaforo_leitura_laser.unlock();
+
+        semaforo_robo.lock();
+        phi = robot.getTh();                  // [graus] orientacao do robo
+        semaforo_robo.unlock();
+
+        semaforo_robo.lock();
+        (*salvar) << contador/10.0 << " " << v  << " " << w  << " " << vr  << " " << wr
+                  << " " << robot.getX() << " " << robot.getY() << " " << rho << " " << pioneer_landmark << endl;
+        semaforo_robo.unlock();
+
+        contador++;
+        psi ++;
+        cout << "psi = " << psi << endl;
+
+        ArUtil::sleep(100);
+    }
+    robot.setRotVel(0.0);
 }

@@ -95,14 +95,14 @@ private:
     x_robo_real,
     y_robo_real;
 
-    bool
-    LandmarkDetected;   // Flag que indica detecção da landmark pelo laser
-
     Mode
     myMode;             // Modo da máquina de estados para detecção da landmark
 
     ArPose
     posicao_corrigida;  // Posicao corrigida do robô
+
+    bool
+    Primeira_Deteccao;
 
 };
 

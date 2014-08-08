@@ -14,7 +14,7 @@ CameraPioneer::CameraPioneer(QObject *parent) :
 void CameraPioneer::run()
 {
 
-    //   VideoCapture cap(1); // open the default camera
+    // VideoCapture cap(1); // open the default camera
     if(!cap_pioneer.isOpened())  // check if we succeeded
         return;
 
@@ -24,12 +24,11 @@ void CameraPioneer::run()
     // Inicializa variável que armazena a quantidade de vezes que a landmark foi detectada
     contador= 0;
 
+    // Reinicia variavel que indica a primeira detecção da landmark
+    Primeira_Deteccao = false;
 
     while (1)
     {
-
-        //       cap_pioneer.open(1);
-
         //cap_pioneer >> frame_pioneer; // get a new frame from camera
         cap_pioneer >> frame_pioneer; // get a new frame from camera
 
@@ -47,41 +46,31 @@ void CameraPioneer::run()
         scanner.scan(image);
 
         // Procura pela landmark
-        for (Image::SymbolIterator symbol = image.symbol_begin(); symbol != image.symbol_end(); ++symbol) {
-
-            //cout << pioneer_landmark <<endl ;
-
+        for (Image::SymbolIterator symbol = image.symbol_begin(); symbol != image.symbol_end(); ++symbol)
+        {
             if ( ( (symbol->get_data()[0] ) - 48 ) == pioneer_landmark )
             {
-
                 contador ++;
 
                 if ( contador >= 3 )
                 {
-                    emit PrintLandMarkPionnerAtual();
-                    PontoAtingido = true;
+                    if ( Primeira_Deteccao == false )
+                    {
+                        emit PrintLandMarkPionnerAtual();
+                        PontoAtingido = true;
+                        Primeira_Deteccao = true;
+                    }
+
                     contador = 0;
-                    //Cálculo da região de busca da landmark no vetor de medidas do laser
-                    //angle = ( 60 * ( (symbol->get_location_x(3) + symbol->get_location_x(0)) / 2 ) / width );
-
-                    //angle = 105 - angle;
-                    //i = angle;
-                    //                cout << "largura = "<< width << endl;
-                    //                cout << "x1 = " << symbol->get_location_x(3) << endl;
-                    //                cout << "x0 = "<< symbol->get_location_x(0) << endl;
-                    //                cout << "angle = " <<angle << endl;
-                    //                cout << "angle laser inicial = " << i << endl;
-                    //                cout << "angle laser final = " << ( i+30 ) << endl << endl;
-
                     k = 0;
                     semaforo_leitura_laser.lock();
+
                     for ( l = 55 ; l <= 125 ; l++ )
                     {
                         laser_image[k] = readinglaser[l+1] - readinglaser[l];
                         k++;
                     }
                     semaforo_leitura_laser.unlock();
-
 
                     // Máquina de estados para procurar a landmark nas medidas do laser
                     k = 0;
@@ -90,12 +79,10 @@ void CameraPioneer::run()
                     fim = 0;
                     setMode(Estado_1);
 
-                    LandmarkDetected = true;
-
                     while ( k <= 70 )
                     {
-
-                        switch (myMode) {
+                        switch (myMode)
+                        {
 
                         case Estado_1:
                         {
@@ -132,7 +119,7 @@ void CameraPioneer::run()
                             {
                                 l++;
                                 k++;
-                                if (l > 10 )
+                                if (l > 8 )
                                 {
                                     l = 0;
                                     setMode(Estado_1);
@@ -140,7 +127,7 @@ void CameraPioneer::run()
                             }
                             else
                             {
-                                if ( ( laser_image[k] >= 300 ) && ( l >= 2 ) && ( l <= 10 ) )
+                                if ( ( laser_image[k] >= 300 ) && ( l >= 1 ) && ( l <= 8 ) )
                                 {
                                     fim = k;
                                     l = 0;
@@ -158,28 +145,14 @@ void CameraPioneer::run()
                         case Estado_4:
                         {
 
-                            //                            inicio = inicio + angle;
-                            //                            fim = fim + angle;
-                            //                            posicao = inicio + ( (fim - inicio) / 2 );
-
                             indice_landmark = 55 + inicio + ( (fim - inicio) / 2 );
-
-                            cout << "ang_laser" << indice_landmark << endl << endl;
-
-                            //cout << "inicio = " << inicio << endl;
-                            //cout << "fim = " << fim << endl;
-                            //cout << "posicao = " << posicao << endl;
 
                             // Deve-se somar 5cm do raio do tubo
                             dist_to_landmark = readinglaser[(int)(indice_landmark)] + 50;
-                            cout << endl << "distância sem correção = " << dist_to_landmark << endl << endl;
-
-                            //cout << "Distancia = " << dist_to_landmark << endl;
 
                             // A distância entre o laser e o centro do robô é de 25cm
                             // Essa equação corrige a distância medida pelo laser para a distância
                             // entre o centro do robô e a landmark
-
 
                             if ( indice_landmark > 90 )
                             {
@@ -201,7 +174,6 @@ void CameraPioneer::run()
                                 }
                             }
 
-
                             ////////////////////////////////
                             // Correção da posição do Robô//
                             ////////////////////////////////
@@ -218,13 +190,12 @@ void CameraPioneer::run()
                             cout << "y_corrigido = " << y_robo_real << endl;
 
                             // Alterando x e y do encoder do robô
-                            //
                             posicao_corrigida.setPose( x_robo_real , y_robo_real , phi );
                             robot.setEncoderPose( posicao_corrigida );
-                            //
+
                             // Finaliza a busca da landmark
                             k= 71;
-                            msleep(500);
+                            msleep(100);
 
                             break;
                         }
@@ -251,8 +222,6 @@ void CameraPioneer::run()
 
     }
 }
-
-
 
 
 /******************************************************************************************************/

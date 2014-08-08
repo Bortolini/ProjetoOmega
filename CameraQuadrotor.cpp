@@ -31,7 +31,7 @@ void CameraQuadrotor::run()
         cvtColor(frame_quadrotor,frame_hsv, CV_BGR2HSV);
 
         //Binarização para selecionar a cor azul
-        inRange(frame_hsv, Scalar(25,100,0), Scalar(35,200,255), frame_bin);
+        inRange(frame_hsv, Scalar(0,100,140), Scalar(10,255,255), frame_bin);
 
         //Filtro para retirar ruidos de outras cores (não azul)
         //cvSmooth(frame_bin, frame_bin2, CV_MEDIAN, 3, 3);
